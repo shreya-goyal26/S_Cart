@@ -1,0 +1,121 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Contact Support & Inquiries – S_Cart{% endblock %}
+
+{% block content %}
+
+<!-- Page Hero -->
+<section class="page-hero" style="padding:2.5rem 1.5rem 1.5rem;">
+  <div class="container">
+    <span class="section-tag"><i class="fas fa-headset"></i> 24/7 Support</span>
+    <h1>Get in <span style="background:linear-gradient(135deg,#c9a84c,#f0c96a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Touch</span></h1>
+    <p>Have questions about orders, selling on S_Cart, or partnership inquiries? We're here to help.</p>
+    <div class="breadcrumb">
+      <a href="{% url 'ShopHome' %}">Home</a>
+      <span>/</span>
+      <span>Contact</span>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:1.5rem;">
+  <div class="container">
+    <div class="contact-grid">
+
+      <!-- Contact Info -->
+      <div class="reveal">
+        <h2 style="font-size:1.8rem; font-weight:800; margin-bottom:0.5rem; font-family:'Outfit',sans-serif;">Let's <span style="background:linear-gradient(135deg,#c9a84c,#f0c96a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Connect</span></h2>
+        <p style="color:#8892a4; margin-bottom:2rem; line-height:1.7;">Our dedicated platform team is active 24/7 to support buyers and sellers across all categories.</p>
+
+        <div class="contact-info">
+          <div class="contact-item">
+            <div class="contact-item-icon">📍</div>
+            <div class="contact-item-text">
+              <h4>Headquarters</h4>
+              <p>S_Cart Commerce Hub, 42 MG Road,<br>Bengaluru, Karnataka 560001</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-item-icon">📧</div>
+            <div class="contact-item-text">
+              <h4>Direct Email</h4>
+              <p>support@scart.in<br>sellers@scart.in</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-item-icon">📞</div>
+            <div class="contact-item-text">
+              <h4>Phone Support</h4>
+              <p>+91 98765 43210<br>Mon–Sat, 9:00 AM – 9:00 PM IST</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:2rem;">
+          <p style="font-size:0.8rem; color:#8892a4; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.75rem;">Community Channels</p>
+          <div class="social-links">
+            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Form -->
+      <div class="glass-card reveal" style="padding:2.5rem; border-color:rgba(201,168,76,0.25);">
+        <h3 style="font-family:'Outfit',sans-serif; font-weight:700; margin-bottom:0.35rem; font-size:1.3rem;">Send a Message</h3>
+        <p style="color:#8892a4; font-size:0.85rem; margin-bottom:2rem;">Your message is saved directly to our support database.</p>
+
+        <form method="POST" action="{% url 'ShopContact' %}">
+          {% csrf_token %}
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group">
+              <label class="form-label" for="firstName">First Name *</label>
+              <input type="text" name="firstName" id="firstName" class="form-control" value="{% if user.is_authenticated %}{{ user.first_name }}{% endif %}" placeholder="John" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lastName">Last Name</label>
+              <input type="text" name="lastName" id="lastName" class="form-control" value="{% if user.is_authenticated %}{{ user.last_name }}{% endif %}" placeholder="Doe">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group">
+              <label class="form-label" for="email">Email Address *</label>
+              <input type="email" name="email" id="email" class="form-control" value="{% if user.is_authenticated %}{{ user.email }}{% endif %}" placeholder="john@example.com" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="phone">Phone Number</label>
+              <input type="tel" name="phone" id="phone" class="form-control" placeholder="+91 98765 43210">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="subject">Subject</label>
+            <select name="subject" id="subject" class="form-control form-select">
+              <option value="General Inquiry">General Inquiry</option>
+              <option value="Order & Tracking Support">Order & Tracking Support</option>
+              <option value="Seller Onboarding & Listing">Seller Onboarding & Listing</option>
+              <option value="Returns & Refunds">Returns & Refunds</option>
+              <option value="Partnership & Press">Partnership & Press</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="message">Message *</label>
+            <textarea name="message" id="message" class="form-control" rows="5" placeholder="Describe your question or feedback in detail..." required style="resize:vertical;"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%; padding:0.9rem; font-size:1rem;">
+            <i class="fas fa-paper-plane"></i> Send Message to Support
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}

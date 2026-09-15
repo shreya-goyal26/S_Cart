@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Article – {{ post.title }} – S_Cart</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Blog Styles -->
+  <link rel="stylesheet" href="{% static 'blog/blog_style.css' %}">
+  <link rel="stylesheet" href="{% static 'shop/style.css' %}">
+</head>
+<body>
+
+<!-- ══════════ BLOG NAVBAR ══════════ -->
+<nav class="blog-navbar" id="blogNav">
+  <a href="{% url 'BlogHome' %}" class="blog-logo">
+    <span class="s">S_Cart</span><span class="blog">Blog</span>
+  </a>
+  <div style="display:flex; align-items:center; gap:0.75rem;">
+    <a href="{% url 'BlogPostDetail' post.post_id %}" class="btn btn-outline btn-sm">
+      <i class="fas fa-eye"></i> View Article
+    </a>
+  </div>
+</nav>
+
+<div class="blog-wrapper" style="padding-top:6rem; padding-bottom:5rem;">
+  <div class="blog-container" style="max-width:850px;">
+    <div class="glass-card" style="padding:2.5rem; border-color:rgba(124,58,237,0.3);">
+      <div style="margin-bottom:2rem;">
+        <span class="blog-hero-badge"><i class="fas fa-edit"></i> Edit Article</span>
+        <h1 style="font-family:'Outfit',sans-serif; font-size:1.8rem; font-weight:800; color:#f8fafc; margin-bottom:0.35rem;">
+          Update Article
+        </h1>
+      </div>
+
+      <form method="POST" action="{% url 'BlogEditPost' post.post_id %}" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label class="form-label" for="artTitle" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">Article Title *</label>
+          <input type="text" name="title" id="artTitle" class="form-control" value="{{ post.title }}" required style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#f8fafc; padding:0.8rem 1rem; width:100%; font-size:1rem;">
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
+          <div class="form-group">
+            <label class="form-label" for="artCat" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">Category *</label>
+            <input type="text" name="category" id="artCat" class="form-control" value="{{ post.category }}" required style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#f8fafc; padding:0.75rem 1rem; width:100%;">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="artReadTime" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">Read Time</label>
+            <input type="text" name="read_time" id="artReadTime" class="form-control" value="{{ post.read_time }}" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#f8fafc; padding:0.75rem 1rem; width:100%;">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label class="form-label" for="artTags" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">Tags (Comma-separated)</label>
+          <input type="text" name="tags" id="artTags" class="form-control" value="{{ post.tags }}" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#f8fafc; padding:0.75rem 1rem; width:100%;">
+        </div>
+
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label class="form-label" for="artExcerpt" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">Excerpt *</label>
+          <textarea name="excerpt" id="artExcerpt" rows="3" required style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#f8fafc; padding:0.8rem; width:100%; font-family:'Inter',sans-serif; resize:vertical;">{{ post.excerpt }}</textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label class="form-label" for="artContent" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">Content *</label>
+          <textarea name="content" id="artContent" rows="12" required style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#f8fafc; padding:1rem; width:100%; font-family:'Inter',sans-serif; line-height:1.7; resize:vertical;">{{ post.content }}</textarea>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+          <div class="form-group">
+            <label class="form-label" for="artImg" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">Change Cover Image File</label>
+            <input type="file" name="thumbnail" id="artImg" accept="image/*" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#8892a4; padding:0.5rem; width:100%;">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="artImgUrl" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">Cover Image URL</label>
+            <input type="url" name="thumbnail_url" id="artImgUrl" value="{{ post.thumbnail_url }}" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#f8fafc; padding:0.75rem 1rem; width:100%;">
+          </div>
+        </div>
+
+        <div style="display:flex; gap:1rem; margin-top:2rem;">
+          <button type="submit" class="btn btn-purple" style="flex:1; padding:0.9rem; font-size:1rem; justify-content:center;">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+          <a href="{% url 'BlogPostDetail' post.post_id %}" class="btn btn-outline" style="padding:0.9rem 1.5rem;">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

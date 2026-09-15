@@ -1,0 +1,202 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Explore Products & Marketplace – S_Cart{% endblock %}
+
+{% block content %}
+
+<!-- Page Hero -->
+<section class="page-hero" style="padding:2.5rem 1.5rem 1.5rem;">
+  <div class="container">
+    <span class="section-tag"><i class="fas fa-th-large"></i> Marketplace Catalog</span>
+    <h1>Discover <span style="background:linear-gradient(135deg,#c9a84c,#f0c96a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Curated</span> Products</h1>
+    <p>Browse verified products listed by authentic sellers across technology, fashion, audio, and home living.</p>
+    <div class="breadcrumb">
+      <a href="{% url 'ShopHome' %}">Home</a>
+      <span>/</span>
+      <span>Shop Catalog</span>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:1.5rem;">
+  <div class="container">
+
+    <!-- Search & Filter Form -->
+    <div class="glass-card reveal" style="margin-bottom:2rem; padding:1.5rem 2rem;">
+      <form method="GET" action="{% url 'ShopSearch' %}" id="searchForm" style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
+        <div style="flex:2; min-width:240px;">
+          <label class="form-label" for="q">Keyword / Title / Seller</label>
+          <div class="search-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="q" name="q" class="form-control search-input" placeholder="Search keywords, specifications, sellers..." value="{{ query|default:'' }}">
+          </div>
+        </div>
+
+        <div style="flex:1; min-width:160px;">
+          <label class="form-label" for="category">Category</label>
+          <select id="category" name="category" class="form-control form-select">
+            <option value="">All Categories</option>
+            {% for cat in all_categories %}
+              <option value="{{ cat.category }}" {% if category == cat.category %}selected{% endif %}>{{ cat.category }} ({{ cat.count }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div style="flex:1; min-width:150px;">
+          <label class="form-label" for="sort">Sort By</label>
+          <select id="sort" name="sort" class="form-control form-select">
+            <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest First</option>
+            <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+            <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+            <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Highest Rated</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="padding:0.8rem 1.5rem; align-self:flex-end;">
+          <i class="fas fa-filter"></i> Apply Filter
+        </button>
+      </form>
+    </div>
+
+    <!-- Category Pills -->
+    <div class="category-bar reveal" style="margin-bottom:2rem; justify-content:flex-start;">
+      <a href="{% url 'ShopSearch' %}" class="cat-chip {% if not category %}active{% endif %}">All Items</a>
+      {% for cat in all_categories %}
+        <a href="{% url 'ShopSearch' %}?category={{ cat.category }}" class="cat-chip {% if category == cat.category %}active{% endif %}">
+          {{ cat.category }} <span style="font-size:0.7rem; opacity:0.7;">({{ cat.count }})</span>
+        </a>
+      {% endfor %}
+    </div>
+
+    <!-- Results Header -->
+    <div class="search-results-header reveal" style="margin-bottom:1.5rem;">
+      <div class="results-count">
+        Found <strong style="color:#f0c96a;">{{ result_count }}</strong> matching products
+        {% if query %} for "<strong style="color:#e8eaf0;">{{ query }}</strong>"{% endif %}
+        {% if category %} in <strong style="color:#e8eaf0;">{{ category }}</strong>{% endif %}
+      </div>
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <span style="font-size:0.8rem; color:#8892a4;">View Layout:</span>
+        <button id="gridViewBtn" onclick="setView('grid')" style="background:rgba(201,168,76,0.15); border:1px solid rgba(201,168,76,0.3); color:#c9a84c; padding:0.4rem 0.7rem; border-radius:0.5rem; cursor:pointer;" title="Grid View"><i class="fas fa-th"></i></button>
+        <button id="listViewBtn" onclick="setView('list')" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#8892a4; padding:0.4rem 0.7rem; border-radius:0.5rem; cursor:pointer;" title="List View"><i class="fas fa-list"></i></button>
+      </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="product-grid" id="searchGrid">
+      {% for product in products %}
+        <article class="product-card reveal">
+          <div class="product-card-img-wrap">
+            {% if product.display_image %}
+              <img src="{{ product.display_image }}" alt="{{ product.product_name }}" loading="lazy" style="width:100%; height:100%; object-fit:cover;">
+            {% else %}
+              <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;background:#111a35;">🛍️</div>
+            {% endif %}
+
+            {% if product.discount_percent > 0 %}
+              <span class="product-card-badge">{{ product.discount_percent }}% OFF</span>
+            {% elif product.is_featured %}
+              <span class="product-card-badge" style="background:linear-gradient(135deg,#7c3aed,#4f8ef7);">Featured</span>
+            {% else %}
+              <span class="product-card-badge">{{ product.category }}</span>
+            {% endif %}
+
+            <button class="product-card-wishlist" onclick="toggleWishlist(this)" title="Add to Wishlist">♡</button>
+          </div>
+
+          <div class="product-card-body">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+              <span class="product-card-cat">{{ product.category }}</span>
+              <span style="font-size:0.75rem; color:#f0c96a; font-weight:600;">★ {{ product.rating }} ({{ product.rating_count }})</span>
+            </div>
+
+            <h3 class="product-card-name">
+              <a href="{% url 'ShopProductView' product.product_id %}" style="color:inherit;">
+                {{ product.product_name }}
+              </a>
+            </h3>
+
+            <p class="product-card-desc">{{ product.desc|truncatewords:14 }}</p>
+
+            <div style="font-size:0.75rem; color:#8892a4; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
+              <i class="fas fa-store" style="color:#c9a84c;"></i>
+              <span>Seller: <strong style="color:#e8eaf0;">{{ product.seller_name|default:"S_Cart Official" }}</strong></span>
+            </div>
+
+            <div class="product-card-footer">
+              <div>
+                <span class="product-price">₹{{ product.price }}</span>
+                {% if product.original_price and product.original_price > product.price %}
+                  <span style="font-size:0.75rem; color:#8892a4; text-decoration:line-through; margin-left:0.3rem;">₹{{ product.original_price }}</span>
+                {% endif %}
+              </div>
+              <div class="product-card-actions">
+                <button class="btn btn-secondary btn-sm" onclick="addToCart({{ product.product_id }}, '{{ product.product_name|escapejs }}')" title="Add to Cart">
+                  <i class="fas fa-cart-plus"></i>
+                </button>
+                <a href="{% url 'ShopProductView' product.product_id %}" class="btn btn-primary btn-sm">
+                  View
+                </a>
+              </div>
+            </div>
+          </div>
+        </article>
+      {% empty %}
+        <div style="grid-column:1 / -1; text-align:center; padding:4rem 2rem;" class="glass-card">
+          <div style="font-size:3.5rem; margin-bottom:1rem;">🔍</div>
+          <h3 style="font-size:1.3rem; margin-bottom:0.5rem;">No products found</h3>
+          <p style="color:#8892a4; margin-bottom:1.5rem;">Try adjusting your search terms or exploring all categories.</p>
+          <a href="{% url 'ShopSearch' %}" class="btn btn-primary">
+            Clear Filters & View All
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setView(type) {
+  const grid = document.getElementById('searchGrid');
+  const gridBtn = document.getElementById('gridViewBtn');
+  const listBtn = document.getElementById('listViewBtn');
+
+  if (type === 'list') {
+    grid.style.gridTemplateColumns = '1fr';
+    grid.querySelectorAll('.product-card').forEach(card => {
+      card.style.flexDirection = 'row';
+      const imgWrap = card.querySelector('.product-card-img-wrap');
+      if (imgWrap) {
+        imgWrap.style.width = '220px';
+        imgWrap.style.flexShrink = '0';
+        imgWrap.style.aspectRatio = '1';
+      }
+    });
+    gridBtn.style.background = 'rgba(255,255,255,0.04)';
+    gridBtn.style.color = '#8892a4';
+    listBtn.style.background = 'rgba(201,168,76,0.15)';
+    listBtn.style.color = '#c9a84c';
+  } else {
+    grid.style.gridTemplateColumns = '';
+    grid.querySelectorAll('.product-card').forEach(card => {
+      card.style.flexDirection = '';
+      const imgWrap = card.querySelector('.product-card-img-wrap');
+      if (imgWrap) {
+        imgWrap.style.width = '';
+        imgWrap.style.flexShrink = '';
+        imgWrap.style.aspectRatio = '';
+      }
+    });
+    gridBtn.style.background = 'rgba(201,168,76,0.15)';
+    gridBtn.style.color = '#c9a84c';
+    listBtn.style.background = 'rgba(255,255,255,0.04)';
+    listBtn.style.color = '#8892a4';
+  }
+}
+</script>
+{% endblock %}

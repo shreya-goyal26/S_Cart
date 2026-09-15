@@ -1,0 +1,279 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Checkout & Place Order – S_Cart{% endblock %}
+
+{% block features %}{% endblock %}
+{% block newsletter %}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .cart-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    gap: 0.75rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Hero -->
+<section class="page-hero" style="padding:2rem 1.5rem 1rem;">
+  <div class="container">
+    <span class="section-tag"><i class="fas fa-shield-alt"></i> 256-Bit Encrypted Checkout</span>
+    <h1>Complete Your <span style="background:linear-gradient(135deg,#c9a84c,#f0c96a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Order</span></h1>
+  </div>
+</section>
+
+<section class="section" style="padding-top:1.5rem;">
+  <div class="container">
+
+    {% if cart.items %}
+      <div class="checkout-grid">
+
+        <!-- Shipping & Payment Form -->
+        <div>
+          <form method="POST" action="{% url 'ShopCheckout' %}" id="checkoutOrderForm">
+            {% csrf_token %}
+            <input type="hidden" name="items_json" id="checkoutItemsJson">
+            <input type="hidden" name="amount" id="checkoutAmount" value="{{ cart.total }}">
+
+            <!-- 1. Shipping Information -->
+            <div class="glass-card reveal" style="margin-bottom:1.5rem;">
+              <h3 style="font-family:'Outfit',sans-serif; font-weight:700; margin-bottom:1.5rem; font-size:1.15rem; display:flex; align-items:center; gap:0.6rem;">
+                <span style="background:linear-gradient(135deg,#c9a84c,#f0c96a); color:#000; width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:900;">1</span>
+                Shipping Address
+              </h3>
+
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div class="form-group">
+                  <label class="form-label" for="chkFirstName">First Name *</label>
+                  <input type="text" name="firstName" id="chkFirstName" class="form-control" value="{% if user.is_authenticated %}{{ user.first_name }}{% endif %}" placeholder="John" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="chkLastName">Last Name *</label>
+                  <input type="text" name="lastName" id="chkLastName" class="form-control" value="{% if user.is_authenticated %}{{ user.last_name }}{% endif %}" placeholder="Doe" required>
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div class="form-group">
+                  <label class="form-label" for="chkEmail">Email Address *</label>
+                  <input type="email" name="email" id="chkEmail" class="form-control" value="{% if user.is_authenticated %}{{ user.email }}{% endif %}" placeholder="john@example.com" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="chkPhone">Phone Number *</label>
+                  <input type="tel" name="phone" id="chkPhone" class="form-control" placeholder="+91 98765 43210" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="chkAddress">Delivery Street Address *</label>
+                <input type="text" name="address" id="chkAddress" class="form-control" placeholder="House/Flat No, Street, Landmark" required>
+              </div>
+
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem;">
+                <div class="form-group">
+                  <label class="form-label" for="chkCity">City *</label>
+                  <input type="text" name="city" id="chkCity" class="form-control" placeholder="Bengaluru" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="chkState">State *</label>
+                  <select name="state" id="chkState" class="form-control form-select" required>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Delhi">Delhi NCR</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Telangana">Telangana</option>
+                    <option value="Gujarat">Gujarat</option>
+                    <option value="West Bengal">West Bengal</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="chkPin">PIN Code *</label>
+                  <input type="text" name="zip_code" id="chkPin" class="form-control" placeholder="560001" required>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Payment Method -->
+            <div class="glass-card reveal">
+              <h3 style="font-family:'Outfit',sans-serif; font-weight:700; margin-bottom:1.5rem; font-size:1.15rem; display:flex; align-items:center; gap:0.6rem;">
+                <span style="background:linear-gradient(135deg,#c9a84c,#f0c96a); color:#000; width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:900;">2</span>
+                Choose Payment Method
+              </h3>
+
+              <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;">
+                <label style="display:flex; align-items:center; gap:1rem; padding:1rem 1.25rem; border:1px solid rgba(201,168,76,0.4); background:rgba(201,168,76,0.06); border-radius:0.75rem; cursor:pointer;">
+                  <input type="radio" name="paymentMethod" value="Cash on Delivery" checked style="accent-color:#c9a84c;">
+                  <div>
+                    <strong style="color:#e8eaf0; font-size:0.95rem;">Cash on Delivery (COD)</strong>
+                    <div style="font-size:0.75rem; color:#8892a4;">Pay with cash or QR code when package arrives at your door</div>
+                  </div>
+                  <span style="margin-left:auto; font-size:1.4rem;">💵</span>
+                </label>
+
+                <label style="display:flex; align-items:center; gap:1rem; padding:1rem 1.25rem; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02); border-radius:0.75rem; cursor:pointer;">
+                  <input type="radio" name="paymentMethod" value="UPI" style="accent-color:#c9a84c;">
+                  <div>
+                    <strong style="color:#e8eaf0; font-size:0.95rem;">Instant UPI Payment (GPay, PhonePe, Paytm)</strong>
+                    <div style="font-size:0.75rem; color:#8892a4;">Zero fee instant confirmation</div>
+                  </div>
+                  <span style="margin-left:auto; font-size:1.4rem;">📲</span>
+                </label>
+
+                <label style="display:flex; align-items:center; gap:1rem; padding:1rem 1.25rem; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02); border-radius:0.75rem; cursor:pointer;">
+                  <input type="radio" name="paymentMethod" value="Credit / Debit Card" style="accent-color:#c9a84c;">
+                  <div>
+                    <strong style="color:#e8eaf0; font-size:0.95rem;">Credit / Debit Card</strong>
+                    <div style="font-size:0.75rem; color:#8892a4;">Visa, MasterCard, RuPay with 3D Secure OTP</div>
+                  </div>
+                  <span style="margin-left:auto; font-size:1.4rem;">💳</span>
+                </label>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="width:100%; padding:1rem; font-size:1.05rem;">
+                <i class="fas fa-lock"></i> Confirm & Place Order Securely (₹<span id="btnTotalText">{{ cart.total }}</span>)
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Order Summary Sidebar -->
+        <div class="reveal" style="position:sticky; top:90px;">
+          <div class="glass-card" style="border-color:rgba(201,168,76,0.25);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+              <h3 style="font-family:'Outfit',sans-serif; font-weight:700; font-size:1.15rem;">Order Summary</h3>
+              <span style="font-size:0.8rem; color:#c9a84c; font-weight:600;">{{ cart.count }} Items</span>
+            </div>
+
+            <!-- Cart Items List -->
+            <div id="checkoutCartItemsList" style="max-height:350px; overflow-y:auto; margin-bottom:1rem; padding-right:0.25rem;">
+              {% for item in cart.items %}
+                <div class="cart-item-row" id="cart-item-{{ item.product_id }}">
+                  <div style="width:48px; height:48px; border-radius:0.5rem; overflow:hidden; background:#111a35; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                    {% if item.image %}
+                      <img src="{{ item.image }}" alt="{{ item.name }}" style="width:100%; height:100%; object-fit:cover;">
+                    {% else %}
+                      <span style="font-size:1.4rem;">🛍️</span>
+                    {% endif %}
+                  </div>
+                  <div style="flex:1; min-width:0;">
+                    <div style="font-weight:600; font-size:0.88rem; color:#e8eaf0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ item.name }}</div>
+                    <div style="font-size:0.75rem; color:#8892a4;">
+                      ₹{{ item.price }} &times;
+                      <span style="color:#c9a84c; font-weight:700;">{{ item.qty }}</span>
+                    </div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-weight:700; font-size:0.95rem; color:#f0c96a;">₹{{ item.total }}</div>
+                    <button onclick="removeItemFromCheckout({{ item.product_id }})" style="background:none; border:none; color:#ef4444; font-size:0.72rem; cursor:pointer; padding:0;">Remove</button>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- Promo Code -->
+            <div style="display:flex; gap:0.5rem; margin:1.25rem 0;">
+              <input type="text" id="promoInput" class="form-control" placeholder="Promo code (e.g. SCART30)" style="font-size:0.85rem;">
+              <button type="button" onclick="applyPromoCode()" class="btn btn-secondary btn-sm" style="white-space:nowrap;">Apply</button>
+            </div>
+
+            <!-- Cost Breakdown -->
+            <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:1rem;">
+              <div class="order-total-row">
+                <span>Cart Subtotal</span>
+                <span id="summarySubtotal">₹{{ cart.subtotal }}</span>
+              </div>
+              <div class="order-total-row">
+                <span>Express Shipping</span>
+                <span style="color:#10b981;">FREE</span>
+              </div>
+              <div class="order-total-row" id="discountSummaryRow" style="display:none;">
+                <span style="color:#10b981;">Promo Discount</span>
+                <span style="color:#10b981;" id="summaryDiscount">−₹0</span>
+              </div>
+              <div class="order-total-row">
+                <span>Taxes (18% GST)</span>
+                <span id="summaryTax">₹{{ cart.tax }}</span>
+              </div>
+              <div class="order-total-row total" style="margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.1);">
+                <span>Grand Total</span>
+                <span id="summaryTotal" style="color:#f0c96a;">₹{{ cart.total }}</span>
+              </div>
+            </div>
+
+            <!-- Trust badges -->
+            <div style="display:flex; justify-content:center; gap:1rem; margin-top:1.5rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.06);">
+              <span style="font-size:0.75rem; color:#8892a4;"><i class="fas fa-lock"></i> SSL Secured</span>
+              <span style="font-size:0.75rem; color:#8892a4;"><i class="fas fa-undo"></i> 30-Day Returns</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    {% else %}
+      <!-- Empty Cart State -->
+      <div class="glass-card reveal" style="max-width:550px; margin:3rem auto; text-align:center; padding:4rem 2rem;">
+        <div style="font-size:4rem; margin-bottom:1rem;">🛍️</div>
+        <h2 style="font-family:'Outfit',sans-serif; font-size:1.6rem; font-weight:800; margin-bottom:0.5rem;">Your Shopping Cart is Empty</h2>
+        <p style="color:#8892a4; margin-bottom:2rem;">Looks like you haven't added any products yet. Browse through our catalog and add items you love!</p>
+        <a href="{% url 'ShopSearch' %}" class="btn btn-primary btn-lg">
+          <i class="fas fa-shopping-bag"></i> Start Shopping Now
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentSubtotal = {{ cart.subtotal|default:0 }};
+let currentTax = {{ cart.tax|default:0 }};
+let currentTotal = {{ cart.total|default:0 }};
+let discountAmt = 0;
+
+function applyPromoCode() {
+  const code = document.getElementById('promoInput').value.trim().toUpperCase();
+  if (code === 'SCART30') {
+    discountAmt = Math.round(currentSubtotal * 0.3);
+    const newTotal = Math.max(0, currentSubtotal - discountAmt + currentTax);
+    document.getElementById('discountSummaryRow').style.display = 'flex';
+    document.getElementById('summaryDiscount').textContent = `−₹${discountAmt}`;
+    document.getElementById('summaryTotal').textContent = `₹${newTotal}`;
+    document.getElementById('btnTotalText').textContent = newTotal;
+    document.getElementById('checkoutAmount').value = newTotal;
+    showToast('Promo code SCART30 applied! 30% discount 🎉');
+  } else {
+    showToast('Invalid promo code. Try SCART30', 'error');
+  }
+}
+
+function removeItemFromCheckout(productId) {
+  fetch("{% url 'ShopApiCartUpdate' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCSRFToken()
+    },
+    body: JSON.stringify({ product_id: productId, action: 'remove' })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+      showToast('Item removed from cart');
+      window.location.reload();
+    }
+  });
+}
+</script>
+{% endblock %}

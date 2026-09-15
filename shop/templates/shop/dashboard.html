@@ -1,0 +1,512 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Seller & User Dashboard – S_Cart{% endblock %}
+{% block features %}{% endblock %}
+{% block newsletter %}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .dash-tabs {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 2rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+  .dash-tab-btn {
+    background: transparent;
+    border: none;
+    color: #8892a4;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.6rem 1.25rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+  }
+  .dash-tab-btn:hover {
+    color: #e8eaf0;
+    background: rgba(255,255,255,0.04);
+  }
+  .dash-tab-btn.active {
+    background: linear-gradient(135deg, rgba(201,168,76,0.15) 0%, rgba(124,58,237,0.1) 100%);
+    color: #f0c96a;
+    border: 1px solid rgba(201,168,76,0.3);
+  }
+  .dash-badge {
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 9999px;
+    font-weight: 800;
+  }
+  .product-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    gap: 1rem;
+    flex-wrap: wrap;
+    transition: background 0.2s;
+  }
+  .product-row:hover {
+    background: rgba(255,255,255,0.02);
+  }
+  .inquiry-card {
+    padding: 1.25rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+    margin-bottom: 1rem;
+    transition: all 0.3s;
+  }
+  .inquiry-card.unread {
+    border-color: rgba(201,168,76,0.4);
+    background: rgba(201,168,76,0.03);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Hero -->
+<section class="page-hero" style="padding:2.5rem 1.5rem 1.5rem;">
+  <div class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.5rem;">
+      <div>
+        <span class="section-tag"><i class="fas fa-user-shield"></i> Portal & Dashboard</span>
+        <h1>Welcome, <span style="background:linear-gradient(135deg,#c9a84c,#f0c96a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">{{ user.first_name|default:user.username }}</span></h1>
+        <p style="color:#8892a4; margin-top:0.25rem;">Manage your store listings, customer inquiries, orders, and blog publications.</p>
+      </div>
+      <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+        <button onclick="switchDashTab('addProduct')" class="btn btn-primary">
+          <i class="fas fa-plus-circle"></i> Add New Product
+        </button>
+        <a href="{% url 'BlogCreatePost' %}" class="btn btn-secondary">
+          <i class="fas fa-pen-fancy"></i> Write Article
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:1rem;">
+  <div class="container">
+
+    <!-- Stats Row -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:2.5rem;" class="reveal">
+      <div class="glass-card" style="padding:1.25rem; display:flex; align-items:center; gap:1rem;">
+        <div style="font-size:2.2rem; background:rgba(201,168,76,0.1); width:56px; height:56px; border-radius:0.75rem; display:flex; align-items:center; justify-content:center;">🛍️</div>
+        <div>
+          <div style="font-size:1.6rem; font-weight:800; color:#f0c96a; font-family:'Outfit',sans-serif;">{{ my_products.count }}</div>
+          <div style="font-size:0.78rem; color:#8892a4; text-transform:uppercase; letter-spacing:0.05em;">Listed Products</div>
+        </div>
+      </div>
+      <div class="glass-card" style="padding:1.25rem; display:flex; align-items:center; gap:1rem;">
+        <div style="font-size:2.2rem; background:rgba(79,142,247,0.1); width:56px; height:56px; border-radius:0.75rem; display:flex; align-items:center; justify-content:center;">📬</div>
+        <div>
+          <div style="font-size:1.6rem; font-weight:800; color:#4f8ef7; font-family:'Outfit',sans-serif;">{{ received_inquiries.count }}</div>
+          <div style="font-size:0.78rem; color:#8892a4; text-transform:uppercase; letter-spacing:0.05em;">Buyer Inquiries</div>
+        </div>
+      </div>
+      <div class="glass-card" style="padding:1.25rem; display:flex; align-items:center; gap:1rem;">
+        <div style="font-size:2.2rem; background:rgba(16,185,129,0.1); width:56px; height:56px; border-radius:0.75rem; display:flex; align-items:center; justify-content:center;">📦</div>
+        <div>
+          <div style="font-size:1.6rem; font-weight:800; color:#10b981; font-family:'Outfit',sans-serif;">{{ my_orders.count }}</div>
+          <div style="font-size:0.78rem; color:#8892a4; text-transform:uppercase; letter-spacing:0.05em;">Your Orders</div>
+        </div>
+      </div>
+      <div class="glass-card" style="padding:1.25rem; display:flex; align-items:center; gap:1rem;">
+        <div style="font-size:2.2rem; background:rgba(124,58,237,0.1); width:56px; height:56px; border-radius:0.75rem; display:flex; align-items:center; justify-content:center;">📝</div>
+        <div>
+          <div style="font-size:1.6rem; font-weight:800; color:#c4b5fd; font-family:'Outfit',sans-serif;">{{ my_articles.count }}</div>
+          <div style="font-size:0.78rem; color:#8892a4; text-transform:uppercase; letter-spacing:0.05em;">Published Articles</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Tabs -->
+    <div class="dash-tabs">
+      <button class="dash-tab-btn active" id="tabBtnProducts" onclick="switchDashTab('products')">
+        <i class="fas fa-box-open"></i> My Listed Products ({{ my_products.count }})
+      </button>
+      <button class="dash-tab-btn" id="tabBtnAddProduct" onclick="switchDashTab('addProduct')">
+        <i class="fas fa-plus-circle"></i> Add New Product
+      </button>
+      <button class="dash-tab-btn" id="tabBtnInquiries" onclick="switchDashTab('inquiries')">
+        <i class="fas fa-comments"></i> Buyer Inquiries
+        {% if unread_inquiries_count %}<span class="dash-badge">{{ unread_inquiries_count }} NEW</span>{% endif %}
+      </button>
+      <button class="dash-tab-btn" id="tabBtnOrders" onclick="switchDashTab('orders')">
+        <i class="fas fa-shopping-bag"></i> My Orders ({{ my_orders.count }})
+      </button>
+      <button class="dash-tab-btn" id="tabBtnArticles" onclick="switchDashTab('articles')">
+        <i class="fas fa-newspaper"></i> My Articles ({{ my_articles.count }})
+      </button>
+    </div>
+
+    <!-- ══════════ TAB 1: MY PRODUCTS ══════════ -->
+    <div id="tabProducts" class="dash-tab-content">
+      <div class="glass-card" style="padding:0;">
+        <div style="padding:1.5rem; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <h3 style="font-family:'Outfit',sans-serif; font-size:1.2rem; font-weight:700;">Products You Are Selling</h3>
+            <p style="color:#8892a4; font-size:0.85rem;">These products are active in the live store for all users to discover and reach out.</p>
+          </div>
+          <button onclick="switchDashTab('addProduct')" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> Add Another Product
+          </button>
+        </div>
+
+        {% if my_products %}
+          <div>
+            {% for p in my_products %}
+              <div class="product-row">
+                <div style="display:flex; align-items:center; gap:1.2rem; min-width:260px;">
+                  <div style="width:54px; height:54px; border-radius:0.5rem; overflow:hidden; background:#111a35; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                    {% if p.display_image %}
+                      <img src="{{ p.display_image }}" alt="{{ p.product_name }}" style="width:100%; height:100%; object-fit:cover;">
+                    {% else %}
+                      <span style="font-size:1.8rem;">🛍️</span>
+                    {% endif %}
+                  </div>
+                  <div>
+                    <h4 style="font-size:0.95rem; font-weight:700; color:#e8eaf0; margin-bottom:0.2rem;">
+                      <a href="{% url 'ShopProductView' p.product_id %}" style="color:#e8eaf0; transition:color 0.2s;" onmouseover="this.style.color='#f0c96a'" onmouseout="this.style.color='#e8eaf0'">
+                        {{ p.product_name }}
+                      </a>
+                    </h4>
+                    <span style="font-size:0.75rem; color:#8892a4;">Category: <strong style="color:#c9a84c;">{{ p.category }}</strong> &bull; Rating: {{ p.rating }}★ ({{ p.rating_count }})</span>
+                  </div>
+                </div>
+
+                <div style="text-align:right;">
+                  <div style="font-weight:700; color:#f0c96a; font-size:1.1rem; font-family:'Outfit',sans-serif;">₹{{ p.price }}</div>
+                  {% if p.original_price and p.original_price > p.price %}
+                    <div style="font-size:0.75rem; color:#8892a4; text-decoration:line-through;">₹{{ p.original_price }}</div>
+                  {% endif %}
+                </div>
+
+                <div>
+                  {% if p.in_stock %}
+                    <span style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:0.2rem 0.6rem; border-radius:9999px; font-size:0.75rem; font-weight:600;">In Stock</span>
+                  {% else %}
+                    <span style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); padding:0.2rem 0.6rem; border-radius:9999px; font-size:0.75rem; font-weight:600;">Out of Stock</span>
+                  {% endif %}
+                </div>
+
+                <div style="display:flex; gap:0.5rem;">
+                  <a href="{% url 'ShopProductView' p.product_id %}" class="btn btn-secondary btn-sm" title="View in Store">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="{% url 'ShopEditProduct' p.product_id %}" class="btn btn-secondary btn-sm" title="Edit Product">
+                    <i class="fas fa-edit"></i> Edit
+                  </a>
+                  <a href="{% url 'ShopDeleteProduct' p.product_id %}" onclick="return confirm('Are you sure you want to delete this product?')" class="btn btn-sm" style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3);" title="Delete Product">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="text-align:center; padding:4rem 2rem;">
+            <div style="font-size:3.5rem; margin-bottom:1rem;">📦</div>
+            <h3 style="font-family:'Outfit',sans-serif; font-size:1.3rem; margin-bottom:0.5rem;">You haven't listed any products yet</h3>
+            <p style="color:#8892a4; font-size:0.9rem; max-width:400px; margin:0 auto 1.5rem;">Start selling to thousands of active buyers on S_Cart by listing your first product today!</p>
+            <button onclick="switchDashTab('addProduct')" class="btn btn-primary">
+              <i class="fas fa-plus"></i> List Your First Product
+            </button>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ══════════ TAB 2: ADD NEW PRODUCT FORM ══════════ -->
+    <div id="tabAddProduct" class="dash-tab-content" style="display:none;">
+      <div class="glass-card" style="max-width:850px; margin:0 auto; padding:2.5rem;">
+        <div style="margin-bottom:2rem;">
+          <span class="section-tag"><i class="fas fa-store"></i> Product Listing</span>
+          <h2 style="font-size:1.6rem; font-weight:800; font-family:'Outfit',sans-serif;">List a New Product in S_Cart Store</h2>
+          <p style="color:#8892a4; font-size:0.88rem;">Fill out the details below. Once saved, your product will immediately go live in search and categories.</p>
+        </div>
+
+        <form method="POST" action="{% url 'ShopAddProduct' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <div class="form-group">
+            <label class="form-label" for="prodName">Product Title / Name *</label>
+            <input type="text" name="product_name" id="prodName" class="form-control" placeholder="e.g. Wireless Noise-Cancelling Headphones Pro" required>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group">
+              <label class="form-label" for="prodCat">Primary Category *</label>
+              <select name="category" id="prodCat" class="form-control form-select" required>
+                <option value="">Select Category...</option>
+                <option value="Electronics">Electronics & Gadgets</option>
+                <option value="Fashion">Fashion & Apparel</option>
+                <option value="Audio">Audio & Sound</option>
+                <option value="Home & Living">Home & Living</option>
+                <option value="Sports">Sports & Fitness</option>
+                <option value="Books">Books & Media</option>
+                <option value="Beauty">Beauty & Personal Care</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prodSubCat">Subcategory</label>
+              <input type="text" name="subcategory" id="prodSubCat" class="form-control" placeholder="e.g. Headphones, Smartwatches, Outerwear">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group">
+              <label class="form-label" for="prodPrice">Selling Price (₹ INR) *</label>
+              <input type="number" name="price" id="prodPrice" class="form-control" placeholder="e.g. 4999" required min="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prodOrigPrice">Original MRP (₹ INR - for discount %)</label>
+              <input type="number" name="original_price" id="prodOrigPrice" class="form-control" placeholder="e.g. 7999">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="prodDesc">Detailed Description *</label>
+            <textarea name="desc" id="prodDesc" class="form-control" rows="4" placeholder="Describe the materials, benefits, build quality, and what makes this item special..." required style="resize:vertical;"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="prodFeatures">Key Specifications / Features (Separate items with | )</label>
+            <textarea name="features" id="prodFeatures" class="form-control" rows="3" placeholder="e.g. 50-Hour Battery Life | Bluetooth 5.3 | Hybrid ANC | 2-Year Warranty" style="resize:vertical;"></textarea>
+            <span style="font-size:0.75rem; color:#8892a4;">Tip: Separate each bullet point with the pipe symbol ( | ).</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group">
+              <label class="form-label" for="prodImg">Upload Product Image File</label>
+              <input type="file" name="image" id="prodImg" class="form-control" accept="image/*" style="padding:0.5rem;">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prodImgUrl">OR Image Web URL</label>
+              <input type="url" name="image_url" id="prodImgUrl" class="form-control" placeholder="https://images.unsplash.com/...">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sellerContact">Contact Info for Buyers (Email / Phone) *</label>
+            <input type="text" name="seller_contact" id="sellerContact" class="form-control" value="{{ user.email }}" placeholder="e.g. seller@example.com | +91 98765 43210" required>
+            <span style="font-size:0.75rem; color:#8892a4;">This enables buyers to reach out to you directly when viewing your product.</span>
+          </div>
+
+          <div class="form-group" style="margin-top:1rem;">
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+              <input type="checkbox" name="in_stock" checked style="accent-color:#c9a84c; transform:scale(1.2);">
+              <span style="font-weight:600; font-size:0.9rem;">Mark as Available / In Stock</span>
+            </label>
+          </div>
+
+          <div style="display:flex; gap:1rem; margin-top:2rem;">
+            <button type="submit" class="btn btn-primary btn-lg" style="flex:1;">
+              <i class="fas fa-check-circle"></i> Publish & List Product Live
+            </button>
+            <button type="button" onclick="switchDashTab('products')" class="btn btn-secondary btn-lg">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ══════════ TAB 3: BUYER INQUIRIES ══════════ -->
+    <div id="tabInquiries" class="dash-tab-content" style="display:none;">
+      <div class="glass-card" style="padding:1.5rem;">
+        <h3 style="font-family:'Outfit',sans-serif; font-size:1.2rem; font-weight:700; margin-bottom:0.25rem;">Buyer Messages & Inquiries</h3>
+        <p style="color:#8892a4; font-size:0.85rem; margin-bottom:1.5rem;">Messages sent by prospective buyers who reached out regarding your listed products.</p>
+
+        {% if received_inquiries %}
+          {% for inq in received_inquiries %}
+            <div class="inquiry-card {% if not inq.is_read %}unread{% endif %}" id="inq-{{ inq.inquiry_id }}">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+                <div>
+                  <h4 style="font-size:1rem; font-weight:700; color:#f0c96a;">
+                    Re: <a href="{% url 'ShopProductView' inq.product.product_id %}" style="color:#f0c96a; text-decoration:underline;">{{ inq.product.product_name }}</a>
+                  </h4>
+                  <span style="font-size:0.82rem; color:#8892a4;">
+                    From: <strong style="color:#e8eaf0;">{{ inq.name }}</strong> (📧 <a href="mailto:{{ inq.email }}" style="color:#4f8ef7;">{{ inq.email }}</a> {% if inq.phone %}| 📞 {{ inq.phone }}{% endif %})
+                  </span>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                  <span style="font-size:0.75rem; color:#8892a4;">{{ inq.created_at|date:"M d, Y, h:i A" }}</span>
+                  {% if not inq.is_read %}
+                    <button onclick="markInquiryRead({{ inq.inquiry_id }})" class="btn btn-sm" style="background:rgba(16,185,129,0.2); color:#10b981; border:1px solid rgba(16,185,129,0.4); font-size:0.75rem; padding:0.2rem 0.5rem;">
+                      Mark Read
+                    </button>
+                  {% endif %}
+                </div>
+              </div>
+
+              {% if inq.subject %}
+                <div style="font-size:0.85rem; font-weight:600; color:#e8eaf0; margin-bottom:0.4rem;">
+                  Subject: {{ inq.subject }}
+                </div>
+              {% endif %}
+
+              <p style="background:rgba(0,0,0,0.2); padding:0.85rem; border-radius:0.5rem; color:#e8eaf0; font-size:0.9rem; line-height:1.6; margin-bottom:0.75rem;">
+                {{ inq.message }}
+              </p>
+
+              <div style="display:flex; gap:0.5rem;">
+                <a href="mailto:{{ inq.email }}?subject=Re: {{ inq.product.product_name }}" class="btn btn-primary btn-sm">
+                  <i class="fas fa-reply"></i> Reply via Email
+                </a>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div style="text-align:center; padding:3rem 1rem;">
+            <div style="font-size:3rem; margin-bottom:0.75rem;">💬</div>
+            <h4>No customer inquiries yet</h4>
+            <p style="color:#8892a4; font-size:0.85rem;">When buyers view your products in the store and click "Contact Seller", their inquiries will appear here.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ══════════ TAB 4: MY ORDERS ══════════ -->
+    <div id="tabOrders" class="dash-tab-content" style="display:none;">
+      <div class="glass-card" style="padding:1.5rem;">
+        <h3 style="font-family:'Outfit',sans-serif; font-size:1.2rem; font-weight:700; margin-bottom:0.25rem;">Orders Placed by You</h3>
+        <p style="color:#8892a4; font-size:0.85rem; margin-bottom:1.5rem;">View order details and track live delivery status in real time.</p>
+
+        {% if my_orders %}
+          {% for ord in my_orders %}
+            <div style="padding:1.25rem; border-radius:0.75rem; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02); margin-bottom:1rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:0.75rem;">
+                <div>
+                  <span style="font-size:0.75rem; color:#8892a4; text-transform:uppercase;">Order ID</span>
+                  <div style="font-family:'Outfit',sans-serif; font-weight:800; font-size:1.1rem; color:#c9a84c;">{{ ord.order_id }}</div>
+                </div>
+                <div>
+                  <span style="font-size:0.75rem; color:#8892a4; text-transform:uppercase;">Placed On</span>
+                  <div style="font-weight:600; font-size:0.9rem;">{{ ord.created_at|date:"M d, Y" }}</div>
+                </div>
+                <div>
+                  <span style="font-size:0.75rem; color:#8892a4; text-transform:uppercase;">Total Amount</span>
+                  <div style="font-weight:800; font-size:1.1rem; color:#10b981;">₹{{ ord.amount }}</div>
+                </div>
+                <div>
+                  <span style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:0.25rem 0.75rem; border-radius:9999px; font-size:0.78rem; font-weight:600;">
+                    {{ ord.status }}
+                  </span>
+                </div>
+                <a href="{% url 'ShopTracker' %}?order_id={{ ord.order_id }}" class="btn btn-primary btn-sm">
+                  <i class="fas fa-truck"></i> Track Order
+                </a>
+              </div>
+              <div style="font-size:0.82rem; color:#8892a4;">
+                Delivering to: {{ ord.address }}, {{ ord.city }} &bull; Courier: {{ ord.courier }} (AWB: {{ ord.tracking_number|default:"Processing" }})
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div style="text-align:center; padding:3rem 1rem;">
+            <div style="font-size:3rem; margin-bottom:0.75rem;">🛒</div>
+            <h4>You haven't placed any orders yet</h4>
+            <p style="color:#8892a4; font-size:0.85rem; margin-bottom:1.5rem;">Explore our curated store catalog to discover premium gear and products.</p>
+            <a href="{% url 'ShopSearch' %}" class="btn btn-primary">
+              <i class="fas fa-shopping-bag"></i> Browse Products
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ══════════ TAB 5: MY ARTICLES ══════════ -->
+    <div id="tabArticles" class="dash-tab-content" style="display:none;">
+      <div class="glass-card" style="padding:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+          <div>
+            <h3 style="font-family:'Outfit',sans-serif; font-size:1.2rem; font-weight:700;">Blog Articles Authored by You</h3>
+            <p style="color:#8892a4; font-size:0.85rem;">Share shopping insights, tech tutorials, reviews, or design trends with the community.</p>
+          </div>
+          <a href="{% url 'BlogCreatePost' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-pen"></i> Write New Article
+          </a>
+        </div>
+
+        {% if my_articles %}
+          {% for art in my_articles %}
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem; border-bottom:1px solid rgba(255,255,255,0.06); gap:1rem; flex-wrap:wrap;">
+              <div>
+                <h4 style="font-size:1rem; font-weight:700;">
+                  <a href="{% url 'BlogPostDetail' art.post_id %}" style="color:#e8eaf0; transition:color 0.2s;" onmouseover="this.style.color='#f0c96a'" onmouseout="this.style.color='#e8eaf0'">
+                    {{ art.title }}
+                  </a>
+                </h4>
+                <span style="font-size:0.75rem; color:#8892a4;">Category: {{ art.category }} &bull; {{ art.pub_date|date:"M d, Y" }} &bull; 👁️ {{ art.views }} views &bull; 💬 {{ art.comments.count }} comments</span>
+              </div>
+              <div style="display:flex; gap:0.5rem;">
+                <a href="{% url 'BlogPostDetail' art.post_id %}" class="btn btn-secondary btn-sm"><i class="fas fa-eye"></i></a>
+                <a href="{% url 'BlogEditPost' art.post_id %}" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i> Edit</a>
+                <a href="{% url 'BlogDeletePost' art.post_id %}" onclick="return confirm('Delete this article?')" class="btn btn-sm" style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3);"><i class="fas fa-trash"></i></a>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div style="text-align:center; padding:3rem 1rem;">
+            <div style="font-size:3rem; margin-bottom:0.75rem;">✍️</div>
+            <h4>No blog articles written yet</h4>
+            <p style="color:#8892a4; font-size:0.85rem; margin-bottom:1.5rem;">Publish insights and stories to increase your visibility on S_Cart.</p>
+            <a href="{% url 'BlogCreatePost' %}" class="btn btn-primary">
+              <i class="fas fa-pen-fancy"></i> Write Your First Article
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+function switchDashTab(tabName) {
+  const tabs = ['products', 'addProduct', 'inquiries', 'orders', 'articles'];
+  tabs.forEach(t => {
+    const el = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+    const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) el.style.display = (t === tabName) ? 'block' : 'none';
+    if (btn) {
+      if (t === tabName) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    }
+  });
+}
+
+function markInquiryRead(inquiryId) {
+  fetch(`/shop/inquiry/mark-read/${inquiryId}/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCSRFToken() }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+      const card = document.getElementById('inq-' + inquiryId);
+      if (card) card.classList.remove('unread');
+      showToast('Marked inquiry as read! ✅');
+    }
+  });
+}
+</script>
+{% endblock %}

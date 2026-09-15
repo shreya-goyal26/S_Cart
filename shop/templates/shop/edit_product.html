@@ -1,0 +1,94 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Edit Product – {{ product.product_name }} – S_Cart{% endblock %}
+{% block features %}{% endblock %}
+{% block newsletter %}{% endblock %}
+
+{% block content %}
+<section class="page-hero" style="padding:2rem 1.5rem 1rem;">
+  <div class="container">
+    <span class="section-tag"><i class="fas fa-edit"></i> Edit Product</span>
+    <h1>Update <span style="background:linear-gradient(135deg,#c9a84c,#f0c96a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">{{ product.product_name }}</span></h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="glass-card reveal" style="max-width:850px; margin:0 auto; padding:2.5rem;">
+      <form method="POST" action="{% url 'ShopEditProduct' product.product_id %}" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label class="form-label" for="prodName">Product Title / Name *</label>
+          <input type="text" name="product_name" id="prodName" class="form-control" value="{{ product.product_name }}" required>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label class="form-label" for="prodCat">Primary Category *</label>
+            <input type="text" name="category" id="prodCat" class="form-control" value="{{ product.category }}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="prodSubCat">Subcategory</label>
+            <input type="text" name="subcategory" id="prodSubCat" class="form-control" value="{{ product.subcategory }}">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label class="form-label" for="prodPrice">Selling Price (₹ INR) *</label>
+            <input type="number" name="price" id="prodPrice" class="form-control" value="{{ product.price }}" required min="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="prodOrigPrice">Original MRP (₹ INR)</label>
+            <input type="number" name="original_price" id="prodOrigPrice" class="form-control" value="{{ product.original_price }}">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="prodDesc">Detailed Description *</label>
+          <textarea name="desc" id="prodDesc" class="form-control" rows="5" required style="resize:vertical;">{{ product.desc }}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="prodFeatures">Key Specifications / Features (Separate with | )</label>
+          <textarea name="features" id="prodFeatures" class="form-control" rows="3" style="resize:vertical;">{{ product.features }}</textarea>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label class="form-label" for="prodImg">Change Product Image</label>
+            <input type="file" name="image" id="prodImg" class="form-control" accept="image/*" style="padding:0.5rem;">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="prodImgUrl">OR Image Web URL</label>
+            <input type="url" name="image_url" id="prodImgUrl" class="form-control" value="{{ product.image_url }}">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="sellerContact">Contact Info for Buyers (Email / Phone) *</label>
+          <input type="text" name="seller_contact" id="sellerContact" class="form-control" value="{{ product.seller_contact }}" required>
+        </div>
+
+        <div class="form-group" style="margin-top:1rem;">
+          <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+            <input type="checkbox" name="in_stock" {% if product.in_stock %}checked{% endif %} style="accent-color:#c9a84c; transform:scale(1.2);">
+            <span style="font-weight:600; font-size:0.9rem;">Mark as Available / In Stock</span>
+          </label>
+        </div>
+
+        <div style="display:flex; gap:1rem; margin-top:2rem;">
+          <button type="submit" class="btn btn-primary btn-lg" style="flex:1;">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+          <a href="{% url 'ShopDashboard' %}" class="btn btn-secondary btn-lg">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

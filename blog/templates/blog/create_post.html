@@ -1,0 +1,135 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Write an Article – S_Cart Publication</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Blog Styles -->
+  <link rel="stylesheet" href="{% static 'blog/blog_style.css' %}">
+  <link rel="stylesheet" href="{% static 'shop/style.css' %}">
+</head>
+<body>
+
+<!-- ══════════ BLOG NAVBAR ══════════ -->
+<nav class="blog-navbar" id="blogNav">
+  <a href="{% url 'BlogHome' %}" class="blog-logo">
+    <span class="s">S_Cart</span><span class="blog">Blog</span>
+  </a>
+
+  <ul class="blog-nav-links">
+    <li><a href="{% url 'BlogHome' %}">All Stories</a></li>
+    <li><a href="{% url 'ShopDashboard' %}">Seller Dashboard</a></li>
+  </ul>
+
+  <div style="display:flex; align-items:center; gap:0.75rem;">
+    <a href="{% url 'BlogHome' %}" class="btn btn-outline btn-sm">
+      <i class="fas fa-arrow-left"></i> Back to Blog
+    </a>
+    <a href="{% url 'ShopHome' %}" class="btn btn-purple btn-sm">
+      <i class="fas fa-shopping-bag"></i> Shop Store
+    </a>
+  </div>
+</nav>
+
+<div class="blog-wrapper" style="padding-top:6rem; padding-bottom:5rem;">
+  <div class="blog-container" style="max-width:850px;">
+
+    <!-- Messages -->
+    {% if messages %}
+      <div style="margin-bottom:2rem;">
+        {% for message in messages %}
+          <div style="background:rgba(124,58,237,0.15); border:1px solid rgba(124,58,237,0.3); border-radius:0.75rem; padding:1rem; color:#e2e8f0; margin-bottom:0.5rem;">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="glass-card" style="padding:2.5rem; border-color:rgba(124,58,237,0.3);">
+      <div style="margin-bottom:2rem;">
+        <span class="blog-hero-badge"><i class="fas fa-pen-nib"></i> Publish Article</span>
+        <h1 style="font-family:'Outfit',sans-serif; font-size:1.8rem; font-weight:800; color:#f8fafc; margin-bottom:0.35rem;">
+          Write a New Article for S_Cart
+        </h1>
+        <p style="color:#8892a4; font-size:0.88rem;">Share product reviews, technology trends, fashion guides, or shopping advice with the community.</p>
+      </div>
+
+      <form method="POST" action="{% url 'BlogCreatePost' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label class="form-label" for="artTitle" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">Article Title *</label>
+          <input type="text" name="title" id="artTitle" class="form-control" placeholder="e.g. Why OLED Displays Are the Future of Mobile Wearables" required style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#f8fafc; padding:0.8rem 1rem; width:100%; font-size:1rem;">
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
+          <div class="form-group">
+            <label class="form-label" for="artCat" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">Topic / Category *</label>
+            <select name="category" id="artCat" class="form-control" required style="background:rgba(9,13,26,0.9); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#f8fafc; padding:0.75rem 1rem; width:100%;">
+              <option value="Technology">Technology</option>
+              <option value="Fashion">Fashion & Style</option>
+              <option value="Audio">Audio & Sound</option>
+              <option value="Lifestyle">Home & Lifestyle</option>
+              <option value="Reviews">Product Reviews</option>
+              <option value="Tips & Tricks">Tips & Guides</option>
+              <option value="Deals">Shopping & Deals</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="artReadTime" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">Estimated Read Time</label>
+            <input type="text" name="read_time" id="artReadTime" class="form-control" placeholder="e.g. 5 min read" value="5 min read" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#f8fafc; padding:0.75rem 1rem; width:100%;">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label class="form-label" for="artTags" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">Tags (Comma-separated)</label>
+          <input type="text" name="tags" id="artTags" class="form-control" placeholder="e.g. Tech, Smartwatch, Reviews, 2025" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#f8fafc; padding:0.75rem 1rem; width:100%;">
+        </div>
+
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label class="form-label" for="artExcerpt" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">Short Summary / Excerpt *</label>
+          <textarea name="excerpt" id="artExcerpt" rows="3" placeholder="Brief hook describing the article for search results and previews..." required style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#f8fafc; padding:0.8rem; width:100%; font-family:'Inter',sans-serif; resize:vertical;"></textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label class="form-label" for="artContent" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">Full Article Content *</label>
+          <textarea name="content" id="artContent" rows="12" placeholder="Write your full story here. You can write paragraphs, subheadings, and bullet points..." required style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#f8fafc; padding:1rem; width:100%; font-family:'Inter',sans-serif; line-height:1.7; resize:vertical;"></textarea>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+          <div class="form-group">
+            <label class="form-label" for="artImg" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">Cover Image File</label>
+            <input type="file" name="thumbnail" id="artImg" accept="image/*" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#8892a4; padding:0.5rem; width:100%;">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="artImgUrl" style="color:#cbd5e1; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; display:block;">OR Cover Image URL</label>
+            <input type="url" name="thumbnail_url" id="artImgUrl" placeholder="https://images.unsplash.com/..." style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#f8fafc; padding:0.75rem 1rem; width:100%;">
+          </div>
+        </div>
+
+        <div style="display:flex; gap:1rem; margin-top:2rem;">
+          <button type="submit" class="btn btn-purple" style="flex:1; padding:0.9rem; font-size:1rem; justify-content:center;">
+            <i class="fas fa-check-circle"></i> Publish Article to Blog
+          </button>
+          <a href="{% url 'BlogHome' %}" class="btn btn-outline" style="padding:0.9rem 1.5rem;">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,328 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="S_Cart Blog – Real insights, trends, reviews, and stories for the modern e-commerce landscape.">
+  <title>S_Cart Blog – Real Insights & Stories</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Blog Styles -->
+  <link rel="stylesheet" href="{% static 'blog/blog_style.css' %}">
+</head>
+<body>
+
+<!-- ══════════ BLOG NAVBAR ══════════ -->
+<nav class="blog-navbar" id="blogNav">
+  <a href="{% url 'BlogHome' %}" class="blog-logo">
+    <span class="s">S_Cart</span><span class="blog">Blog</span>
+  </a>
+
+  <ul class="blog-nav-links">
+    <li><a href="{% url 'BlogHome' %}" class="{% if not request.GET.category %}active{% endif %}">All Stories</a></li>
+    {% for cat in all_categories %}
+      <li><a href="{% url 'BlogHome' %}?category={{ cat.category }}" class="{% if request.GET.category == cat.category %}active{% endif %}">{{ cat.category }}</a></li>
+    {% endfor %}
+  </ul>
+
+  <div style="display:flex; align-items:center; gap:0.75rem;">
+    {% if user.is_authenticated %}
+      <a href="{% url 'BlogCreatePost' %}" class="btn btn-purple btn-sm">
+        <i class="fas fa-pen"></i> Write Post
+      </a>
+    {% else %}
+      <a href="{% url 'ShopLogin' %}" class="btn btn-outline btn-sm">
+        <i class="fas fa-sign-in-alt"></i> Login
+      </a>
+    {% endif %}
+
+    <a href="{% url 'ShopHome' %}" class="btn btn-purple btn-sm">
+      <i class="fas fa-shopping-bag"></i> Shop Store
+    </a>
+  </div>
+</nav>
+
+<!-- ══════════ BLOG HERO ══════════ -->
+<div class="blog-wrapper">
+  <section class="blog-hero">
+    <div class="blog-hero-bg"></div>
+    <div class="blog-hero-overlay"></div>
+    <div class="blog-hero-content">
+      <div class="blog-hero-badge">
+        <i class="fas fa-newspaper"></i>
+        Real Stories, Tech & Culture
+      </div>
+      <h1 class="blog-hero-title">
+        The <span class="hl">S_Cart</span><br>
+        Publication
+      </h1>
+      <p class="blog-hero-sub">
+        Explore in-depth articles on future e-commerce, consumer technology, sustainable fashion, and home lifestyle trends.
+      </p>
+      <div style="display:flex; gap:1rem; flex-wrap:wrap; animation:fadeInUp 0.9s ease 0.2s both;">
+        <a href="#posts" class="btn btn-purple">
+          <i class="fas fa-book-open"></i> Explore Articles ({{ stats.articles }})
+        </a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'BlogCreatePost' %}" class="btn btn-outline">
+            <i class="fas fa-pen-fancy"></i> Publish Your Article
+          </a>
+        {% else %}
+          <a href="{% url 'ShopLogin' %}" class="btn btn-outline">
+            <i class="fas fa-user-edit"></i> Author Login
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Floating stats -->
+    <div style="position:absolute; bottom:2rem; right:2rem; display:flex; flex-direction:column; gap:1rem; animation:float 5s ease-in-out infinite;">
+      <div style="background:rgba(7,11,23,0.7); backdrop-filter:blur(20px); border:1px solid rgba(124,58,237,0.25); border-radius:1rem; padding:1rem 1.5rem; text-align:center;">
+        <div style="font-size:1.6rem; font-weight:800; background:linear-gradient(135deg,#7c3aed,#4f8ef7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; font-family:'Outfit',sans-serif;">{{ stats.articles }}+</div>
+        <div style="font-size:0.72rem; color:#8892a4; text-transform:uppercase; letter-spacing:0.05em;">Live Articles</div>
+      </div>
+      <div style="background:rgba(7,11,23,0.7); backdrop-filter:blur(20px); border:1px solid rgba(13,148,136,0.25); border-radius:1rem; padding:1rem 1.5rem; text-align:center;">
+        <div style="font-size:1.6rem; font-weight:800; background:linear-gradient(135deg,#0d9488,#4f8ef7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; font-family:'Outfit',sans-serif;">{{ stats.comments }}+</div>
+        <div style="font-size:0.72rem; color:#8892a4; text-transform:uppercase; letter-spacing:0.05em;">Community Comments</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ MAIN BLOG CONTENT ══════════ -->
+  <section class="blog-section" id="posts">
+    <div class="blog-container">
+
+      <!-- Category Filter Bar -->
+      <div class="blog-tag-bar reveal" style="margin-bottom:2.5rem;">
+        <a href="{% url 'BlogHome' %}#posts" class="blog-tag {% if not request.GET.category and not request.GET.tag %}active{% endif %}">All Topics</a>
+        {% for cat in all_categories %}
+          <a href="{% url 'BlogHome' %}?category={{ cat.category }}#posts" class="blog-tag {% if request.GET.category == cat.category %}active{% endif %}">
+            {{ cat.category }} ({{ cat.count }})
+          </a>
+        {% endfor %}
+      </div>
+
+      <div class="blog-layout">
+        <!-- Posts Column -->
+        <div>
+
+          <!-- Featured Post (if any) -->
+          {% if featured_post and not request.GET.category and not request.GET.q %}
+            <div class="featured-post reveal" style="margin-bottom:3rem;">
+              <div class="featured-post-img" style="min-height:360px; background:#111a35;">
+                {% if featured_post.display_thumbnail %}
+                  <img src="{{ featured_post.display_thumbnail }}" alt="{{ featured_post.title }}" style="object-fit:cover; width:100%; height:100%;">
+                {% else %}
+                  <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:5rem;">📰</div>
+                {% endif %}
+                <div class="featured-label">📌 Featured Story</div>
+              </div>
+              <div class="featured-post-body">
+                <div>
+                  <div class="post-category">{{ featured_post.category }} &bull; {{ featured_post.read_time }}</div>
+                  <h2 class="post-title">
+                    <a href="{% url 'BlogPostDetail' featured_post.post_id %}" style="color:inherit;">
+                      {{ featured_post.title }}
+                    </a>
+                  </h2>
+                  <div class="post-tags">
+                    {% for tag in featured_post.get_tags_list %}
+                      <span class="post-tag-sm">{{ tag }}</span>
+                    {% endfor %}
+                  </div>
+                  <p class="post-excerpt">{{ featured_post.excerpt }}</p>
+                </div>
+                <div>
+                  <div class="post-meta" style="margin-bottom:1.5rem;">
+                    <div class="post-avatar">{{ featured_post.author_avatar|default:"A" }}</div>
+                    <div class="post-author-info">
+                      <div class="post-author-name">{{ featured_post.author }}</div>
+                      <div class="post-date">{{ featured_post.pub_date|date:"F d, Y" }} &bull; 👁️ {{ featured_post.views }} views</div>
+                    </div>
+                  </div>
+                  <a href="{% url 'BlogPostDetail' featured_post.post_id %}" class="btn btn-purple">
+                    <i class="fas fa-arrow-right"></i> Read Full Story
+                  </a>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- Section Heading -->
+          <div style="margin-bottom:1.5rem;" class="reveal">
+            <span class="blog-section-tag">
+              {% if query %}Search Results for "{{ query }}"
+              {% elif active_category != 'All' %}Category: {{ active_category }}
+              {% elif active_tag %}Tag: #{{ active_tag }}
+              {% else %}Latest Articles{% endif %}
+            </span>
+            <h2 class="blog-section-title">
+              Curated <span style="background:linear-gradient(135deg,#7c3aed,#4f8ef7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Stories</span>
+            </h2>
+          </div>
+
+          <!-- Blog Grid -->
+          <div class="blog-grid">
+            {% for post in posts %}
+              <article class="blog-card reveal">
+                <div class="blog-card-img" style="background:#111a35;">
+                  {% if post.display_thumbnail %}
+                    <img src="{{ post.display_thumbnail }}" alt="{{ post.title }}" style="width:100%; height:100%; object-fit:cover;">
+                  {% else %}
+                    <div class="blog-card-img-placeholder">{{ post.icon|default:"📝" }}</div>
+                  {% endif %}
+                  <span class="blog-card-cat-badge">{{ post.category }}</span>
+                </div>
+                <div class="blog-card-body">
+                  <h3 class="blog-card-title">
+                    <a href="{% url 'BlogPostDetail' post.post_id %}" style="color:inherit;">
+                      {{ post.title }}
+                    </a>
+                  </h3>
+                  <p class="blog-card-excerpt">{{ post.excerpt|truncatewords:18 }}</p>
+                  <div class="blog-card-footer">
+                    <div class="blog-card-author">
+                      <div class="blog-card-avatar">{{ post.author_avatar|default:"A" }}</div>
+                      <div>
+                        <div class="blog-card-author-name">{{ post.author }}</div>
+                        <div class="blog-card-date">{{ post.pub_date|date:"M d, Y" }} &bull; 💬 {{ post.comments.count }}</div>
+                      </div>
+                    </div>
+                    <a href="{% url 'BlogPostDetail' post.post_id %}" class="blog-card-read">
+                      {{ post.read_time|default:"5 min" }} &rarr;
+                    </a>
+                  </div>
+                </div>
+              </article>
+            {% empty %}
+              <div style="grid-column:1 / -1; text-align:center; padding:4rem 2rem; background:rgba(255,255,255,0.02); border-radius:1rem; border:1px solid rgba(255,255,255,0.08);">
+                <div style="font-size:3.5rem; margin-bottom:1rem;">📝</div>
+                <h3>No articles found</h3>
+                <p style="color:#8892a4; margin-bottom:1.5rem;">There are no articles matching your filter. Be the first to publish one!</p>
+                <a href="{% url 'BlogCreatePost' %}" class="btn btn-purple">
+                  <i class="fas fa-pen"></i> Write an Article
+                </a>
+              </div>
+            {% endfor %}
+          </div>
+
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="blog-sidebar">
+
+          <!-- Search Box -->
+          <div class="sidebar-card reveal">
+            <h4><i class="fas fa-search" style="color:#a78bfa; margin-right:0.5rem;"></i> Search Stories</h4>
+            <form method="GET" action="{% url 'BlogHome' %}">
+              <div style="position:relative;">
+                <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Search articles..." style="width:100%; padding:0.7rem 2.5rem 0.7rem 1rem; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#e8eaf0; font-family:'Inter',sans-serif; font-size:0.85rem; outline:none;" onfocus="this.style.borderColor='rgba(124,58,237,0.5)'" onblur="this.style.borderColor=''">
+                <button type="submit" style="position:absolute; right:0.5rem; top:50%; transform:translateY(-50%); background:none; border:none; color:#a78bfa; cursor:pointer; padding:0.4rem;">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Write Article CTA -->
+          <div class="sidebar-card reveal" style="background:linear-gradient(135deg,rgba(124,58,237,0.15) 0%,rgba(79,142,247,0.1) 100%); border-color:rgba(124,58,237,0.3); text-align:center;">
+            <div style="font-size:2.2rem; margin-bottom:0.5rem;">✍️</div>
+            <h4 style="margin-bottom:0.3rem;">Share Your Insights</h4>
+            <p style="font-size:0.8rem; color:#8892a4; margin-bottom:1rem;">Publish stories, tech guides, product reviews, or style advice directly on S_Cart Blog.</p>
+            <a href="{% url 'BlogCreatePost' %}" class="btn btn-purple" style="width:100%; justify-content:center;">
+              <i class="fas fa-pen-fancy"></i> Write an Article
+            </a>
+          </div>
+
+          <!-- Popular Posts -->
+          {% if popular_posts %}
+            <div class="sidebar-card reveal">
+              <h4><i class="fas fa-fire" style="color:#f59e0b; margin-right:0.5rem;"></i> Most Read Stories</h4>
+              {% for p in popular_posts %}
+                <div class="sidebar-post">
+                  <div class="sidebar-post-num">0{{ forloop.counter }}</div>
+                  <div>
+                    <div class="sidebar-post-title">
+                      <a href="{% url 'BlogPostDetail' p.post_id %}" style="color:inherit;">{{ p.title }}</a>
+                    </div>
+                    <div class="sidebar-post-date">{{ p.pub_date|date:"M d" }} &bull; 👁️ {{ p.views }} reads</div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <!-- Popular Tags -->
+          {% if all_tags %}
+            <div class="sidebar-card reveal">
+              <h4><i class="fas fa-tags" style="color:#a78bfa; margin-right:0.5rem;"></i> Trending Tags</h4>
+              <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+                {% for t in all_tags %}
+                  <a href="{% url 'BlogHome' %}?tag={{ t }}#posts" class="blog-tag" style="font-size:0.75rem; padding:0.3rem 0.75rem; text-decoration:none;">
+                    #{{ t }}
+                  </a>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- Back to Store CTA -->
+          <div class="sidebar-card reveal" style="text-align:center; background:linear-gradient(135deg,rgba(201,168,76,0.08) 0%,rgba(124,58,237,0.06) 100%); border-color:rgba(201,168,76,0.15);">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">🛍️</div>
+            <h4 style="margin-bottom:0.3rem;">Shop the Gear</h4>
+            <p style="font-size:0.8rem; color:#8892a4; margin-bottom:1rem;">Discover products featured in our articles and reviews.</p>
+            <a href="{% url 'ShopHome' %}" class="btn btn-purple" style="width:100%; justify-content:center;">
+              <i class="fas fa-shopping-bag"></i> Browse Store
+            </a>
+          </div>
+
+        </aside>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════ BLOG FOOTER ══════════ -->
+  <footer class="blog-footer">
+    <div class="blog-container">
+      <div style="margin-bottom:1rem;">
+        <span style="font-family:'Outfit',sans-serif; font-size:1.3rem; font-weight:900;">
+          <span style="background:linear-gradient(135deg,#c9a84c,#f0c96a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">S_Cart</span>
+          <span style="color:#8892a4; font-weight:400; font-size:1rem;"> Publication</span>
+        </span>
+      </div>
+      <div style="display:flex; justify-content:center; gap:2rem; margin-bottom:1rem; flex-wrap:wrap;">
+        <a href="{% url 'ShopHome' %}" style="font-size:0.85rem; color:#8892a4;">Marketplace</a>
+        <a href="{% url 'BlogHome' %}" style="font-size:0.85rem; color:#8892a4;">All Articles</a>
+        <a href="{% url 'ShopAbout' %}" style="font-size:0.85rem; color:#8892a4;">About S_Cart</a>
+        <a href="{% url 'ShopContact' %}" style="font-size:0.85rem; color:#8892a4;">Support</a>
+      </div>
+      <p style="font-size:0.78rem; color:#4a5568;">&copy; 2024 S_Cart Blog & Publication. Real Database Powered.</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+  // Navbar scroll
+  const blogNav = document.getElementById('blogNav');
+  window.addEventListener('scroll', () => {
+    blogNav.classList.toggle('scrolled', window.scrollY > 30);
+  });
+
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  revealEls.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

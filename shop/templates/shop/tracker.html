@@ -1,0 +1,157 @@
+{% extends "shop/base.html" %}
+{% load static %}
+
+{% block title %}Real-Time Shipment Tracker – S_Cart{% endblock %}
+
+{% block content %}
+
+<!-- Page Hero -->
+<section class="page-hero" style="padding:2.5rem 1.5rem 1.5rem;">
+  <div class="container">
+    <span class="section-tag"><i class="fas fa-satellite-dish"></i> Live Logistics</span>
+    <h1>Track Your <span style="background:linear-gradient(135deg,#c9a84c,#f0c96a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Order</span></h1>
+    <p>Get instant shipment status and delivery progress directly from our database.</p>
+    <div class="breadcrumb">
+      <a href="{% url 'ShopHome' %}">Home</a>
+      <span>/</span>
+      <span>Track Order</span>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:1.5rem;">
+  <div class="container">
+    <div class="tracker-card" style="max-width:720px; margin:0 auto;">
+
+      <!-- Tracking Search Form -->
+      <div class="glass-card reveal" style="margin-bottom:2rem; padding:2rem;">
+        <h3 style="font-family:'Outfit',sans-serif; font-weight:700; margin-bottom:0.35rem; font-size:1.25rem;">Enter Order Details</h3>
+        <p style="color:#8892a4; font-size:0.85rem; margin-bottom:1.5rem;">Search by your unique S_Cart Order ID or your checkout email address.</p>
+
+        <form method="POST" action="{% url 'ShopTracker' %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <label class="form-label" for="orderId">Order Reference ID</label>
+            <div class="search-wrapper">
+              <i class="fas fa-hashtag search-icon"></i>
+              <input type="text" id="orderId" name="orderId" class="form-control search-input" value="{{ order.order_id|default:'' }}" placeholder="e.g. SC-2024-48291" style="padding-left:2.8rem;">
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:1rem; margin:1rem 0;">
+            <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
+            <span style="color:#8892a4; font-size:0.8rem; font-weight:600;">OR</span>
+            <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="trackEmail">Registered Email Address</label>
+            <div class="search-wrapper">
+              <i class="fas fa-envelope search-icon"></i>
+              <input type="email" id="trackEmail" name="trackEmail" class="form-control search-input" placeholder="you@example.com" style="padding-left:2.8rem;">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%; padding:0.9rem; font-size:1rem;">
+            <i class="fas fa-search"></i> Track Shipment Journey
+          </button>
+        </form>
+      </div>
+
+      <!-- Tracking Results (when order found) -->
+      {% if found and order %}
+        <div id="trackingResult" class="reveal">
+
+          <!-- Order Status Header Card -->
+          <div class="glass-card" style="margin-bottom:1.5rem; border-color:rgba(201,168,76,0.3); padding:2rem;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+              <div>
+                <div style="font-size:0.75rem; color:#8892a4; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.25rem;">Order ID</div>
+                <div style="font-family:'Outfit',sans-serif; font-weight:800; font-size:1.3rem; color:#f0c96a;">{{ order.order_id }}</div>
+                <div style="font-size:0.8rem; color:#8892a4; margin-top:0.2rem;">Recipient: <strong style="color:#e8eaf0;">{{ order.name }}</strong></div>
+              </div>
+              <div>
+                <div style="font-size:0.75rem; color:#8892a4; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.25rem;">Current Status</div>
+                <span style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); border-radius:9999px; padding:0.35rem 0.9rem; font-size:0.85rem; font-weight:700;">
+                  {{ order.status }}
+                </span>
+              </div>
+              <div>
+                <div style="font-size:0.75rem; color:#8892a4; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.25rem;">Order Total</div>
+                <div style="font-weight:800; font-size:1.2rem; color:#10b981;">₹{{ order.amount }}</div>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div style="margin-bottom:1.75rem;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.8rem;">
+                <span style="color:#8892a4;">Delivery Journey Progress</span>
+                <span style="color:#f0c96a; font-weight:700;">{{ progress }}%</span>
+              </div>
+              <div style="height:8px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden;">
+                <div style="width:{{ progress }}%; height:100%; background:linear-gradient(90deg,#c9a84c,#f0c96a); border-radius:4px; transition:width 1s ease;"></div>
+              </div>
+            </div>
+
+            <!-- Courier Details -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:1rem; padding:1.25rem; background:rgba(255,255,255,0.02); border-radius:0.75rem; border:1px solid rgba(255,255,255,0.06);">
+              <div>
+                <div style="font-size:0.72rem; color:#8892a4;">Courier Partner</div>
+                <div style="font-weight:700; font-size:0.95rem; color:#e8eaf0;">{{ order.courier }}</div>
+              </div>
+              <div>
+                <div style="font-size:0.72rem; color:#8892a4;">Tracking / AWB Number</div>
+                <div style="font-weight:700; font-size:0.95rem; color:#c9a84c;">{{ order.tracking_number|default:"Generating..." }}</div>
+              </div>
+              <div>
+                <div style="font-size:0.72rem; color:#8892a4;">Payment Method</div>
+                <div style="font-weight:700; font-size:0.95rem; color:#e8eaf0;">{{ order.payment_method }} ({{ order.payment_status }})</div>
+              </div>
+            </div>
+
+            <!-- Delivery Address -->
+            <div style="margin-top:1rem; font-size:0.85rem; color:#8892a4;">
+              <i class="fas fa-map-marker-alt" style="color:#ef4444; margin-right:0.3rem;"></i> Destination: <strong style="color:#e8eaf0;">{{ order.address }}, {{ order.city }}, {{ order.state }} - {{ order.zip_code }}</strong>
+            </div>
+          </div>
+
+          <!-- Timeline of Updates -->
+          <div class="glass-card" style="padding:2rem;">
+            <h3 style="font-family:'Outfit',sans-serif; font-weight:700; margin-bottom:1.5rem; font-size:1.2rem;">
+              <i class="fas fa-history" style="color:#c9a84c; margin-right:0.4rem;"></i> Live Shipment Updates
+            </h3>
+
+            {% if updates %}
+              <div class="tracker-timeline">
+                {% for up in updates %}
+                  <div class="timeline-step">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                      <h4 style="color:#e8eaf0; font-size:0.95rem;">{{ up.update_desc }}</h4>
+                      <div class="timeline-date" style="color:#8892a4; font-size:0.75rem; margin-top:0.25rem;">
+                        {{ up.timestamp|date:"M d, Y &bull; h:i A" }}
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="timeline-step">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <h4>Order Placed & Registered</h4>
+                  <p>Order has been recorded and is currently queued for packaging and warehouse dispatch.</p>
+                  <div class="timeline-date">{{ order.created_at|date:"M d, Y &bull; h:i A" }}</div>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}
